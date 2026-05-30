@@ -1,5 +1,3 @@
-[portada.bmp](https://github.com/user-attachments/files/28423814/portada.bmp)
-
 # ProviEmplea - Backend API & Documentación OpenAPI 🚀
 > **Asignatura:** Desarrollo Backend  
 > **Evaluación:** Evaluación Sumativa Unidad 3 (Caso Real ProviEmplea)  
