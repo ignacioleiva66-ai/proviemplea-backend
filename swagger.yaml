@@ -1,0 +1,8 @@
+openapi: 3.0.3
+info:
+  title: ProviEmplea API - Backend U3
+  description: Plataforma de búsqueda inversa de empleo con CV ciego.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths: {}

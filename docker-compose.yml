@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Servidor Backend PHP (Apache)
+  app:
+    image: php:8.2-apache
+    container_name: proviemplea_backend
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+
+  # Interfaz de Swagger UI para documentar y probar
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: proviemplea_swagger_ui
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./swagger.yaml:/usr/share/nginx/html/swagger.yaml
+    environment:
+      SPEC_URL: swagger.yaml
