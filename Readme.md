@@ -1,3 +1,4 @@
+img/portada.bmp
 # ProviEmplea - Backend API & Documentación OpenAPI 🚀
 > **Asignatura:** Desarrollo Backend  
 > **Evaluación:** Evaluación Sumativa Unidad 3 (Caso Real ProviEmplea)  
