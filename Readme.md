@@ -1,4 +1,4 @@
-https://github.com/ignacioleiva66-ai/proviemplea-backend/blob/6a99f85f49e77a60f0604d1d3d2ee6f80ba4ef42/img/portada.bmp
+![portada](https://github.com/ignacioleiva66-ai/proviemplea-backend/blob/6a99f85f49e77a60f0604d1d3d2ee6f80ba4ef42/img/portada.bmp)
 # ProviEmplea - Backend API & Documentación OpenAPI 🚀
 > **Asignatura:** Desarrollo Backend  
 > **Evaluación:** Evaluación Sumativa Unidad 3 (Caso Real ProviEmplea)  
