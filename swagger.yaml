@@ -1,8 +1,456 @@
 openapi: 3.0.3
 info:
-  title: ProviEmplea API - Backend U3
-  description: Plataforma de búsqueda inversa de empleo con CV ciego.
+  title: API ProviEmplea - Vitrina de Talentos Inversa (Evaluación U3)
+  description: |
+    Documentación de operaciones CRUD optimizadas para el backend en PHP de ProviEmplea.
+    Implementa un enfoque estricto de **Currículum Ciego** omitiendo datos sociodemográficos (nombres, edad, género, comuna) para mitigar la discriminación laboral.
+    
+    ### Rendimiento y Optimización
+    * **Limitación de tasa (Rate Limiting):** Máximo 60 peticiones por minuto por IP corporativa. Al excederse, la API responderá con un código `429 Too Many Requests`.
+    * **Estrategia de Caché:** Los endpoints de lectura (`GET`) implementan cabeceras `Cache-Control: public, max-age=300` para optimizar el rendimiento del servidor.
   version: 1.0.0
+
 servers:
-  - url: http://localhost:8080
-paths: {}
+  - url: http://localhost:8080/api
+    description: Servidor de Desarrollo Local (Docker)
+
+paths:
+  # ==========================================
+  # 1. LEER PERFILES (GET) & CREAR PERFIL (POST)
+  # ==========================================
+  /perfiles:
+    get:
+      summary: Obtener lista de perfiles de candidatos (Leer)
+      description: |
+        Retorna los talentos disponibles en la vitrina. Las empresas pueden buscar y filtrar candidatos.
+        *Tiempo de respuesta esperado:* < 150ms (Optimizada con caché).
+      parameters:
+        - name: experiencia_anos
+          in: query
+          description: Filtrar candidatos por años mínimos de trayectoria profesional.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de candidatos ciegos obtenida exitosamente.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PerfilCandidato'
+        '429':
+          $ref: '#/components/responses/429Error'
+
+    post:
+      summary: Registrar un nuevo perfil de candidato (Crear - CV Ciego)
+      description: |
+        Inserta un nuevo talento en el sistema, asegurando que no contenga datos sociodemográficos.
+        *Tiempo de respuesta esperado:* < 250ms.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+      responses:
+        '201':
+          description: Perfil guardado con éxito y de manera precisa en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCandidato'
+        '400':
+          description: Datos de entrada inválidos (Error de estructura o campos prohibidos).
+        '500':
+          description: Error interno del servidor PHP al procesar la query SQL.
+
+  # ==========================================
+  # 2. OPERACIONES INDIVIDUALES POR ID
+  # ==========================================
+  /perfiles/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID numérico incremental asignado de forma anónima al candidato.
+        schema:
+          type: integer
+
+    get:
+      summary: Obtener el perfil detallado de un candidato (Leer individual)
+      description: *Tiempo de respuesta esperado:* < 80ms (Hit de caché).
+      responses:
+        '200':
+          description: Candidato encontrado y mapeado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCandidato'
+        '404':
+          description: El perfil con el ID provisto no existe.
+
+    put:
+      summary: Actualizar la trayectoria de un candidato (Actualizar - PUT)
+      description: Reemplaza por completo el recurso de la experiencia o habilidades. *Tiempo de respuesta esperado:* < 200ms.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+      responses:
+        '200':
+          description: Perfil actualizado correctamente manteniendo la integridad de datos.
+        '404':
+          description: Candidato no encontrado.
+
+    delete:
+      summary: Eliminar perfil de la vitrina (Eliminar)
+      description: Remueve el registro de manera física o lógica. *Tiempo de respuesta esperado:* < 180ms.
+      responses:
+        '200':
+          description: Perfil eliminado exitosamente del sistema.
+        '404':
+          description: ID no encontrado.
+
+  # ==========================================
+  # 3. ACTIVAR / DESACTIVAR VISIBILIDAD (PATCH)
+  # ==========================================
+  /perfiles/{id}/estado:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      summary: Encender o apagar la visibilidad del perfil (Modificar estado)
+      description: |
+        Permite al candidato pausar temporalmente su perfil para no aparecer en las búsquedas de las empresas sin eliminar los datos.
+        *Tiempo de respuesta esperado:* < 100ms.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visible:
+                  type: boolean
+                  description: true para encender en la vitrina, false para apagar.
+                  example: true
+      responses:
+        '200':
+          description: Estado de visibilidad modificado con éxito.
+        '400':
+          description: El cuerpo de la solicitud no corresponde a un booleano válido.
+
+# ==========================================
+# COMPONENTES: ESTRUCTURAS DE DATOS Y ERRORES
+# ==========================================
+components:
+  schemas:
+    PerfilCandidato:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        experiencia_laboral:
+          type: array
+          items:
+            type: object
+            properties:
+              puesto:
+                type: string
+                example: "Production Operator y Carpintero Industrial"
+              anos:
+                type: integer
+                example: 7
+        habilidades:
+          type: array
+          items:
+            type: string
+            example: ["Estructuras metálicas", "SQL Oracle", "Java Backend"]
+        certificaciones:
+          type: array
+          items:
+            type: string
+            example: ["Certificación en Soldadura Avanzada", "Laravel Docker Orchestration"]
+        visible:
+          type: boolean
+          example: true
+        creado_en:
+          type: string
+          format: date-time
+          example: "2026-05-30T13:00:00Z"
+
+    PerfilInput:
+      type: object
+      required:
+        - experiencia_laboral
+        - habilidades
+      properties:
+        experiencia_laboral:
+          type: array
+          items:
+            type: object
+            properties:
+              puesto:
+                type: string
+                example: "Desarrollador PHP Junior"
+              anos:
+                type: integer
+                example: 2
+        habilidades:
+          type: array
+          items:
+            type: string
+            example: ["PHP", "Docker", "Git"]
+        certificaciones:
+          type: array
+          items:
+            type: string
+openapi: 3.0.3
+info:
+  title: API ProviEmplea - Vitrina de Talentos Inversa (Evaluación U3)
+  description: |
+    Documentación de operaciones CRUD optimizadas para el backend en PHP de ProviEmplea.
+    Implementa un enfoque estricto de **Currículum Ciego** omitiendo datos sociodemográficos (nombres, edad, género, comuna) para mitigar la discriminación laboral.
+    
+    ### Rendimiento y Optimización
+    * **Limitación de tasa (Rate Limiting):** Máximo 60 peticiones por minuto por IP corporativa. Al excederse, la API responderá con un código `429 Too Many Requests`.
+    * **Estrategia de Caché:** Los endpoints de lectura (`GET`) implementan cabeceras `Cache-Control: public, max-age=300` para optimizar el rendimiento del servidor.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor de Desarrollo Local (Docker)
+
+paths:
+  # ==========================================
+  # 1. LEER PERFILES (GET) & CREAR PERFIL (POST)
+  # ==========================================
+  /perfiles:
+    get:
+      summary: Obtener lista de perfiles de candidatos (Leer)
+      description: |
+        Retorna los talentos disponibles en la vitrina. Las empresas pueden buscar y filtrar candidatos.
+        *Tiempo de respuesta esperado:* < 150ms (Optimizada con caché).
+      parameters:
+        - name: experiencia_anos
+          in: query
+          description: Filtrar candidatos por años mínimos de trayectoria profesional.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de candidatos ciegos obtenida exitosamente.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PerfilCandidato'
+        '429':
+          $ref: '#/components/responses/429Error'
+
+    post:
+      summary: Registrar un nuevo perfil de candidato (Crear - CV Ciego)
+      description: |
+        Inserta un nuevo talento en el sistema, asegurando que no contenga datos sociodemográficos.
+        *Tiempo de respuesta esperado:* < 250ms.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+      responses:
+          description: El perfil con el ID provisto no existe.
+
+    put:
+      summary: Actualizar la trayectoria de un candidato (Actualizar - PUT)
+      description: Reemplaza por completo el recurso de la experiencia o habilidades. *Tiempo de respuesta esperado:* < 200ms.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilInput'
+      responses:
+        '200':
+          description: Perfil actualizado correctamente manteniendo la integridad de datos.
+        '404':
+          description: Candidato no encontrado.
+
+    delete:
+      summary: Eliminar perfil de la vitrina (Eliminar)
+      description: Remueve el registro de manera física o lógica. *Tiempo de respuesta esperado:* < 180ms.
+      responses:
+        '200':
+        '400':
+          description: El cuerpo de la solicitud no corresponde a un booleano válido.
+
+# ==========================================
+# COMPONENTES: ESTRUCTURAS DE DATOS Y ERRORES
+# ==========================================
+components:
+  schemas:
+    PerfilCandidato:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        experiencia_laboral:
+          type: array
+          items:
+            type: object
+            properties:
+              puesto:
+                type: string
+                example: "Production Operator y Carpintero Industrial"
+              anos:
+                type: integer
+                example: 7
+        habilidades:
+          type: array
+          items:
+            type: string
+            example: ["Estructuras metálicas", "SQL Oracle", "Java Backend"]
+        certificaciones:
+          type: array
+          items:
+            type: string
+            example: ["Certificación en Soldadura Avanzada", "Laravel Docker Orchestration"]
+        visible:
+          type: boolean
+          example: true
+        creado_en:
+          type: string
+          format: date-time
+          example: "2026-05-30T13:00:00Z"
+
+    PerfilInput:
+      type: object
+      required:
+            example: 60        - experiencia_laboral
+        - habilidades
+      properties:
+        experiencia_laboral:
+          type: array
+          items:
+            type: object
+            properties:
+              puesto:
+                type: string
+            type: integer
+                example: "Desarrollador PHP Junior"
+              anos:
+                type: integer
+                example: 2
+        habilidades:
+          type: array
+          items:
+            type: string
+            example: ["PHP", "Docker", "Git"]
+          description: Segundos que debes esperar antes de reintentar.
+          schema:
+        certificaciones:
+          type: array
+          items:
+            type: string
+            example: ["Diplomado en Análisis de Sistemas"]
+
+  responses:
+    429Error:
+      description: Límite de peticiones excedido por la empresa (Rate Limiting).
+      headers:
+        Retry-After:
+          description: Perfil eliminado exitosamente del sistema.
+        '404':
+          description: ID no encontrado.
+
+  # ==========================================
+  # 3. ACTIVAR / DESACTIVAR VISIBILIDAD (PATCH)
+  # ==========================================
+  /perfiles/{id}/estado:
+    parameters:
+      - name: id
+          description: Estado de visibilidad modificado con éxito.
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      summary: Encender o apagar la visibilidad del perfil (Modificar estado)
+      description: |
+        Permite al candidato pausar temporalmente su perfil para no aparecer en las búsquedas de las empresas sin eliminar los datos.
+        *Tiempo de respuesta esperado:* < 100ms.
+      responses:
+        '200':
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visible:
+                  type: boolean
+                  description: true para encender en la vitrina, false para apagar.
+                  example: true
+        '201':
+          description: Perfil guardado con éxito y de manera precisa en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCandidato'
+        '400':
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCandidato'
+        '404':
+          description: Datos de entrada inválidos (Error de estructura o campos prohibidos).
+        '500':
+          description: Error interno del servidor PHP al procesar la query SQL.
+
+  # ==========================================
+      summary: Obtener el perfil detallado de un candidato (Leer individual)
+      description: *Tiempo de respuesta esperado:* < 80ms (Hit de caché).
+      responses:
+        '200':
+          description: Candidato encontrado y mapeado correctamente.
+          content:
+  # 2. OPERACIONES INDIVIDUALES POR ID
+  /perfiles/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID numérico incremental asignado de forma anónima al candidato.
+        schema:
+          type: integer
+
+    get:
+
