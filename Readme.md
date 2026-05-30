@@ -1,69 +1,58 @@
-# ProviEmplea - Backend API & Documentación OpenAPI 🚀
-> **Asignatura:** Desarrollo Backend  
-> **Evaluación:** Evaluación Sumativa Unidad 3 (Caso Real ProviEmplea)  
-> **Institución:** Instituto Profesional San Sebastián  
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
----
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## 👥 Información del Equipo
-* **Nombre del Equipo:** Grupo 4  
-* **Integrantes:** * Ignacio Nicolás Leiva Cordero  
-  * Monserratt Caterina Leal Lizana  
-  * Fabiola Aracely Leal Compayante  
+## About Laravel
 
----
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-## 🛠️ Stack Tecnológico Institucional (Obligatorio)
-* **Lenguaje de Backend:** PHP 8.2 (Estructura nativa orientada a objetos, desacoplada y lista para migración a controladores Laravel)
-* **Contenedores de Entorno:** Docker & Docker Compose (Arquitectura multi-contenedor de aislamiento)
-* **Servidor Web Local:** Apache 2.4 con módulo `mod_rewrite` habilitado para enrutamiento semántico REST
-* **Motor de Documentación y Pruebas:** Swagger UI / OpenAPI Specification 3.0.3
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
----
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## 📋 Descripción de la Solución (Enfoque de Currículum Ciego)
-Este backend preliminar resuelve la problemática de **ProviEmplea**, una plataforma pionera de búsqueda inversa de empleo donde las empresas auditan el talento disponible. 
+## Learning Laravel
 
-Para garantizar el cumplimiento estricto del requerimiento de **no discriminación arbitraria**, el modelo de datos de la API mitiga de raíz el acceso a metadatos sociodemográficos de los candidatos. Los esquemas JSON bloquean campos críticos como nombres, edad, género, fotografías o comunas de residencia, exponiendo exclusivamente vectores de competencias técnicas, años de experiencia comprobable, habilidades duras y certificaciones validadas.
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
----
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## 🌐 Arquitectura de Contenedores y Puertos Locales
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
-El entorno se encuentra orquestado mediante Docker para asegurar la paridad de entornos de desarrollo entre todos los miembros del equipo y la revisión docente:
+## Agentic Development
 
-* **`proviemplea_backend` (Puerto `8080`):** Servidor Apache que procesa el núcleo de la API en PHP. Cuenta con reglas de reescritura `.htaccess` encargadas de interceptar las URI semánticas y canalizarlas al controlador frontal `index.php`.
-* **`proviemplea_swagger_ui` (Puerto `8081`):** Servidor Nginx aislado que consume el contrato de diseño dinámico `swagger.yaml` montado mediante volúmenes compartidos.
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
----
+```bash
+composer require laravel/boost --dev
 
-## 📝 Documentación de Operaciones CRUD & Endpoints
+php artisan boost:install
+```
 
-La especificación OpenAPI mapea de forma precisa el comportamiento del backend para los siguientes flujos de recursos:
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-### 1. Gestión de Perfiles de Candidatos (`/api/perfiles`)
+## Contributing
 
-| Método HTTP | Endpoint | Descripción de Negocio (CV Ciego) | Códigos de Estado Esperados |
-| :--- | :--- | :--- | :--- |
-| **`POST`** | `/api/perfiles` | Registra una nueva propuesta de talento en la vitrina. Valida la existencia obligatoria de competencias y experiencia estructurada. | `201 Created`, `400 Bad Request`, `500 Error` |
-| **`GET`** | `/api/perfiles` | Permite a los reclutadores corporativos listar y filtrar la base de datos de candidatos sin sesgos sociodemográficos. | `200 OK`, `404 Not Found` |
-| **`PUT`** | `/api/perfiles/{id}` | Actualización completa de la trayectoria laboral del candidato. | `200 OK`, `400 Bad Request`, `404 Not Found` |
-| **`DELETE`**| `/api/perfiles/{id}` | Eliminación física o lógica del perfil de la vitrina activa. | `200 OK`, `404 Not Found` |
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
----
+## Code of Conduct
 
-## ⚡ Criterios Avanzados de Optimización y Rendimiento (Punto 5)
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-Para alcanzar el máximo nivel de desempeño técnico (Sobresaliente), el backend inyecta metadatos y lógica transaccional de optimización en las cabeceras HTTP de respuesta:
+## Security Vulnerabilities
 
-1. **Estrategia de Caché del Lado del Cliente (`Cache-Control`):** Las peticiones de lectura masiva (`GET`) implementan directivas `max-age=300, private`. Esto reduce la latencia de respuesta en consultas idénticas por parte de las empresas y minimiza la carga transaccional sobre el servidor backend en consultas recurrentes de perfiles estáticos.
-2. **Limitación de Tasa Adaptativa (`Rate Limiting`):** Se integran los headers de control `X-RateLimit-Limit` y `X-RateLimit-Remaining`. El sistema restringe las solicitudes a un máximo de 60 peticiones por minuto por cliente API corporativo. Esto previene ataques de denegación de servicio (DoS) y el raspado masivo de datos (*scraping*) por parte de bots automatizados no autorizados.
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
----
+## License
 
-## 🚀 Instrucciones para Despliegue y Pruebas Locales
-
-1. Asegúrese de que su terminal **Git Bash** se encuentre en el directorio raíz del proyecto descompromido.
-2. Inicialice la infraestructura del stack ejecutando:
-   ```bash
-   docker compose up -d
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
