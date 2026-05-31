@@ -1,170 +1,173 @@
 openapi: 3.0.3
 info:
-  title: API ProviEmplea - Vitrina de Talentos Inversa
+  title: ProviEmplea API - Plataforma de Búsqueda Inversa de Empleo
   description: |
-    Documentación Backend PHP/Laravel para el caso ProviEmplea.
-    Implementa un enfoque estricto de **Currículum Ciego** para evitar la discriminación laboral, omitiendo nombres, edad, género y comuna.
-    
-    ### Optimización de Rendimiento
-    * **Rate Limiting:** Máximo 60 peticiones por minuto. Retorna `429 Too Many Requests` si se excede.
-    * **Caché:** Endpoints de lectura utilizan `Cache-Control: public, max-age=300`.
+    API Backend para el proyecto ProviEmplea del Departamento de Empleo de Providencia.
+    Plataforma pionera en búsqueda inversa de talento con CV Ciego (sin discriminación por nombre, edad, género, etc.).
   version: 1.0.0
+  contact:
+    name: Solange Montaldo / Cecilia Ahumada
+    email: solange.montaldo@providencia.cl
 
 servers:
-  - url: http://localhost:8080/api
-    description: Servidor Local Dockerizado
+  - url: http://localhost:8000/api
+    description: Servidor Local Docker
+
+tags:
+  - name: Personas
+    description: Gestión de perfiles de candidatos (CV Ciego)
+  - name: Empresas
+    description: Gestión de empresas registradas
+  - name: Health
+    description: Verificación del estado del servicio
 
 paths:
-  /perfiles:
+  /health:
     get:
-      summary: Listar perfiles (CV Ciego)
-      description: Obtiene todos los candidatos disponibles.
+      tags: [Health]
+      summary: Verificar estado de la API
       responses:
         '200':
-          description: Lista obtenida.
-          headers:
-            Cache-Control:
-              schema:
-                type: string
-                example: public, max-age=300
+          description: API funcionando correctamente
           content:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PerfilCandidato'
-        '429':
-          description: Límite de peticiones excedido.
+              example:
+                status: "success"
+                message: "ProviEmplea API está operativa"
+                version: "1.0.0"
+
+  /personas:
+    get:
+      tags: [Personas]
+      summary: Listar todos los perfiles visibles
+      description: Retorna perfiles con caché aplicado
+      responses:
+        '200':
+          description: Lista exitosa
+          content:
+            application/json:
+              example:
+                - id: 1
+                  experiencia_laboral: ["Desarrollador Backend en Empresa XYZ"]
+                  habilidades: ["PHP", "Laravel", "MySQL", "Docker"]
+                  certificaciones: ["Laravel Certified"]
+                  anos_experiencia: 5
+                  visible: true
 
     post:
-      summary: Crear nuevo perfil
-      description: Inserta un candidato validando la estructura del CV ciego.
+      tags: [Personas]
+      summary: Crear nuevo perfil de candidato (CV Ciego)
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PerfilInput'
+            example:
+              experiencia_laboral: ["Experiencia anterior"]
+              habilidades: ["Laravel", "React"]
+              certificaciones: ["Certificado 1"]
+              anos_experiencia: 3
       responses:
-        '201':
-          description: Perfil creado exitosamente.
-        '400':
-          description: Datos inválidos.
+        '201': 
+          description: Perfil creado correctamente
+        '422':
+          description: Error de validación
 
-  /perfiles/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-
+  /personas/{id}:
     get:
+      tags: [Personas]
       summary: Obtener un perfil por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
-          description: Perfil encontrado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PerfilCandidato'
-        '404':
-          description: Perfil no encontrado.
+        '200': { description: Perfil encontrado }
+        '404': { description: Perfil no encontrado }
 
     put:
+      tags: [Personas]
       summary: Actualizar perfil completo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PerfilInput'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
       responses:
-        '200':
-          description: Perfil actualizado.
-        '404':
-          description: ID no encontrado.
+        '200': { description: Perfil actualizado }
 
     delete:
+      tags: [Personas]
       summary: Eliminar perfil
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
       responses:
-        '200':
-          description: Perfil eliminado.
-        '404':
-          description: Perfil no encontrado.
+        '204': { description: Perfil eliminado correctamente }
 
-  /perfiles/{id}/estado:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-    patch:
-      summary: Activar o desactivar visibilidad
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                visible:
-                  type: boolean
-                  example: true
+  /empresas:
+    get:
+      tags: [Empresas]
+      summary: Listar empresas
       responses:
-        '200':
-          description: Estado modificado.
-        '400':
-          description: Error en el cuerpo de la petición.
+        '200': { description: Lista de empresas }
+
+    post:
+      tags: [Empresas]
+      summary: Crear empresa
+      responses:
+        '201': { description: Empresa creada }
+
+  /empresas/{id}:
+    get:
+      tags: [Empresas]
+      summary: Ver empresa
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Empresa encontrada }
+
+    put:
+      tags: [Empresas]
+      summary: Actualizar empresa
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Empresa actualizada }
+
+    delete:
+      tags: [Empresas]
+      summary: Eliminar empresa
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: Empresa eliminada }
 
 components:
   schemas:
-    PerfilCandidato:
+    Persona:
       type: object
       properties:
-        id:
+        experiencia_laboral: 
+          type: array
+          items: { type: string }
+        habilidades: 
+          type: array
+          items: { type: string }
+        certificaciones: 
+          type: array
+          items: { type: string }
+        anos_experiencia: 
           type: integer
-          example: 101
-        experiencia_laboral:
-          type: array
-          items:
-            type: object
-            properties:
-              puesto:
-                type: string
-                example: "Desarrollador Backend"
-              anos:
-                type: integer
-                example: 3
-        habilidades:
-          type: array
-          items:
-            type: string
-            example: ["PHP", "Laravel", "Docker"]
-        visible:
-          type: boolean
-          example: true
-
-    PerfilInput:
-      type: object
-      required:
-        - experiencia_laboral
-        - habilidades
-      properties:
-        experiencia_laboral:
-          type: array
-          items:
-            type: object
-            properties:
-              puesto:
-                type: string
-                example: "Desarrollador Backend"
-              anos:
-                type: integer
-                example: 3
-        habilidades:
-          type: array
-          items:
-            type: string
-            example: ["PHP", "Laravel", "Docker"]
